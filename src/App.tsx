@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 
 const NavbarWrapper = () => {
   return (
-    <div className="py-8 px-12 min-h-screen items-center grid grid-rows-layout gap-8 w-full bg-neutral-700">
+    <div className="py-8 px-12 min-h-screen items-center grid grid-rows-layout gap-8 w-full bg-gradient-to-b from-neutral-800 to-neutral-900">
       <NavBar />
       <main className="h-full flex items-center justify-center">
         <Outlet />
