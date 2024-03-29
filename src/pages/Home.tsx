@@ -1,10 +1,6 @@
-import { useEffect, useState } from "react";
-import { FaRedo } from "react-icons/fa";
-import DisplayWords from "../components/DisplayWords";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
 
-const url = "http://api.quotable.io/random?minLength=350&maxLength=600";
+import { useState, useEffect } from "react";
 
 type QuotableType = {
   _id: string;
@@ -24,10 +20,11 @@ const fetchChallengeWords = async () => {
   return splitWords;
 };
 
-const Home = () => {
-  const queryClient = useQueryClient();
+const url = "http://api.quotable.io/random?minLength=300";
+
+const MonkeyTypeClone = () => {
   const {
-    data: challengeWords,
+    data: words,
     isLoading,
     isError,
     refetch,
@@ -39,49 +36,149 @@ const Home = () => {
 
   const [input, setInput] = useState("");
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [errors, setErrors] = useState<number[]>([]);
+  const [timer, setTimer] = useState<number | null>(null);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [endTime, setEndTime] = useState<number | null>(null);
+  const [finished, setFinished] = useState(false);
+  const [wordsPerMinute, setWordsPerMinute] = useState<number | null>(null);
 
-  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    const lastChar = value.charAt(value.length - 1);
+  useEffect(() => {
+    if (timer !== null && timer > 0 && !finished) {
+      const intervalId = setInterval(() => {
+        setTimer(timer - 1);
+      }, 1000);
 
-    if (
-      lastChar === " " &&
-      challengeWords &&
-      input === challengeWords[currentWordIndex]
-    ) {
-      setCurrentWordIndex((prevWordIndex) => ++prevWordIndex);
+      return () => clearInterval(intervalId);
+    } else if (timer === 0 && !finished) {
+      setEndTime(Date.now());
+      setFinished(true);
+    }
+  }, [timer, finished]);
+
+  useEffect(() => {
+    if (startTime !== null && endTime !== null && !finished) {
+      const timeDifferenceInSeconds = (endTime - startTime) / 1000;
+      const wordsTyped = currentWordIndex;
+      const wordsPerMinute = Math.round(
+        (wordsTyped / timeDifferenceInSeconds) * 60
+      );
+      setWordsPerMinute(wordsPerMinute);
+      setFinished(true);
+    }
+  }, [endTime]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!words) return;
+
+    if (!timer) {
+      setStartTime(Date.now());
+      setTimer(30);
+    }
+
+    const typedValue = e.target.value;
+    setInput(typedValue);
+
+    const currentWord = words[currentWordIndex];
+    const currentErrors = [];
+    for (let i = 0; i < typedValue.length; i++) {
+      if (typedValue[i] !== currentWord[i]) {
+        currentErrors.push(i);
+      }
+    }
+    setErrors(currentErrors);
+
+    const lastValue = typedValue[typedValue.length - 1];
+
+    // Check if word is completed
+    if (lastValue === " ") {
       setInput("");
-    } else {
-      setInput(value);
+      setCurrentWordIndex(currentWordIndex + 1);
+      setErrors([]);
+
+      if (currentWordIndex === words.length - 1) {
+        setEndTime(Date.now());
+      }
     }
   };
 
-  const handleRefetch = () => {
-    const {} = refetch();
+  const handleRestart = () => {
+    setInput("");
+    setCurrentWordIndex(0);
+    setErrors([]);
+    setTimer(null);
+    setStartTime(null);
+    setEndTime(null);
+    setFinished(false);
+    setWordsPerMinute(null);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
+  const renderWord = (word: string, index: number) => {
+    if (index < currentWordIndex) {
+      return (
+        <span key={index} style={{ color: "green" }}>
+          {word}{" "}
+        </span>
+      );
+    } else if (index === currentWordIndex) {
+      return (
+        <span key={index}>
+          <b>{input}</b>
+          {word.slice(input.length)}{" "}
+        </span>
+      );
+    } else {
+      return <span key={index}>{word} </span>;
+    }
+  };
+
+  if (isError) {
+    return <div>Error</div>;
+  }
+
+  if (isLoading || !words) {
+    return <h1>loading...</h1>;
   }
 
   return (
-    <div className="flex items-center justify-center flex-col gap-4">
-      <DisplayWords
-        words={challengeWords || [""]}
-        currentWordIndex={currentWordIndex}
-      />
-
-      <input type="text" value={input} onChange={onInputChange} />
-      <div
-        className="py-4 px-8 text-neutral-400 hover:text-neutral-200"
-        onClick={() => {
-          queryClient.invalidateQueries({ queryKey: ["challenge-words"] });
-        }}
-      >
-        <FaRedo />
+    <div>
+      <div>
+        <h1>{words.map(renderWord)}</h1>
+        {finished ? (
+          <div>
+            <p>
+              {currentWordIndex === words.length
+                ? `Game Over! Your words per minute: ${wordsPerMinute}`
+                : "Time's up!"}
+            </p>
+            <button onClick={handleRestart}>Restart</button>
+          </div>
+        ) : (
+          <p>
+            {timer !== null
+              ? `Time left: ${timer} seconds`
+              : "Start typing to begin the timer"}
+          </p>
+        )}
+        <input
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          autoFocus
+          disabled={finished}
+        />
+      </div>
+      <div>
+        <p>Current word: {input}</p>
+        {errors.length > 0 && (
+          <p style={{ color: "red" }}>
+            Incorrect keystroke(s):{" "}
+            {errors.map((i) => words[currentWordIndex][i])}
+          </p>
+        )}
       </div>
     </div>
   );
 };
 
-export default Home;
+export default MonkeyTypeClone;
