@@ -2,12 +2,18 @@ import { useState, useEffect, useRef } from "react";
 import words from "../words/words.json";
 import { keysToTrack } from "../utils/keysToTrack";
 
-type RandomWord = {
+type RandomLetter = {
   id: number;
   value: string;
   isTyped: boolean;
   isError: boolean;
   isDeletable: boolean;
+};
+
+type RandomWord = {
+  isTyped: boolean;
+  isError: boolean;
+  word: RandomLetter[];
 };
 
 function generateRandomWords() {
@@ -17,18 +23,22 @@ function generateRandomWords() {
   }
 
   let idCounter = 0;
-  const randomWordsObject: RandomWord[][] = randomWords
+  const randomWordsObject: RandomWord[] = randomWords
     .split(" ")
     .map((word, i) => {
-      return word.split("").map((letter, j) => {
-        return {
-          id: idCounter++,
-          value: letter,
-          isTyped: false,
-          isError: false,
-          isDeletable: false,
-        };
-      });
+      return {
+        isTyped: false,
+        isError: false,
+        word: word.split("").map((letter, j) => {
+          return {
+            id: idCounter++,
+            value: letter,
+            isTyped: false,
+            isError: false,
+            isDeletable: false,
+          };
+        }),
+      };
     });
 
   return { randomWordsObject, randomWords };
@@ -38,7 +48,7 @@ const Home = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [words, setWords] = useState("");
   const [wordsArray, setWordsArray] = useState<string[]>([]);
-  const [wordsObject, setWordsObject] = useState<RandomWord[][]>([]);
+  const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const [wordsError, setWordsError] = useState<string[]>([]);
   const [inputFocus, setInputFocus] = useState(false);
 
@@ -62,24 +72,42 @@ const Home = () => {
 
   const handleTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.code === "Backspace") {
-      if (currentLetterIndex === 0) return;
+      console.log(wordsObject[currentWordIndex - 1]);
+      if (
+        currentLetterIndex === 0 &&
+        wordsObject[currentWordIndex - 1].isError
+      ) {
+        console.log(wordsObject[currentWordIndex - 1].isError);
+        wordsObject[currentWordIndex - 1].isError = false;
+        setWordsObject(wordsObject);
+        setCurrentLetterIndex(wordsObject[currentWordIndex - 1].word.length);
+        setCurrentWordIndex((prevIndex) => prevIndex - 1);
+        setValue(
+          wordsObject[currentWordIndex - 1].word
+            .map(({ value }) => value)
+            .join("")
+        );
+        return;
+      }
+
+      if (currentLetterIndex === 0) {
+        return;
+      }
+
       setValue((prevValue) => prevValue.slice(0, -1));
-      setWordsObject((prevObject) => {
-        const newObject = [...prevObject];
-        const targetWord = newObject[currentWordIndex];
-        const targetLetter = targetWord[currentLetterIndex - 1];
-        console.log(targetLetter);
 
-        if (!targetLetter.isDeletable) {
-          targetLetter.isTyped = false;
-          targetLetter.isError = false;
-        } else {
-          targetWord.pop();
-        }
+      const newObject = [...wordsObject];
+      const targetWord = newObject[currentWordIndex];
+      const targetLetter = targetWord.word[currentLetterIndex - 1];
 
-        console.log(targetWord);
-        return newObject;
-      });
+      if (!targetLetter.isDeletable) {
+        targetLetter.isTyped = false;
+        targetLetter.isError = false;
+      } else {
+        targetWord.word.pop();
+      }
+
+      setWordsObject(newObject);
       setCurrentLetterIndex((prevIndex) => prevIndex - 1);
       return;
     }
@@ -88,7 +116,21 @@ const Home = () => {
       return;
     }
 
+    // Handle space
     if (e.code === "Space") {
+      if (!value) return;
+
+      const newObject = [...wordsObject];
+      const targetWord = newObject[currentWordIndex];
+      targetWord.isTyped = true;
+
+      if (value != wordsArray[currentWordIndex]) {
+        targetWord.isError = true;
+      } else {
+        targetWord.isError = false;
+      }
+
+      setWordsObject(newObject);
       setCurrentWordIndex((currIndex) => currIndex + 1);
       setCurrentLetterIndex(0);
       setValue("");
@@ -100,35 +142,31 @@ const Home = () => {
       setCurrentLetterIndex((prevIndex) => prevIndex + 1);
     }
 
-    setWordsObject((prevObject) => {
-      const newObject = [...prevObject];
-      const targetWord = newObject[currentWordIndex];
-      const targetLetter = targetWord[currentLetterIndex];
+    const newObject = [...wordsObject];
+    const targetWord = newObject[currentWordIndex];
+    const targetLetter = targetWord.word[currentLetterIndex];
 
-      // If letter typed is in bound with words
-      if (currentLetterIndex < targetWord.length) {
-        targetLetter["isTyped"] = true;
-        if (targetLetter.value !== e.key) {
-          targetLetter["isError"] = true;
-        }
-        // Handle when more letter typed
-      } else {
-        if (targetWord.length <= 20) {
-          targetWord.push({
-            id: -1,
-            value: e.key,
-            isError: true,
-            isTyped: true,
-            isDeletable: true,
-          });
-        }
+    // If letter typed is in bound with words
+    if (currentLetterIndex < targetWord.word.length) {
+      targetLetter["isTyped"] = true;
+      if (targetLetter.value !== e.key) {
+        targetLetter["isError"] = true;
       }
+      // Handle when more letter typed
+    } else {
+      if (targetWord.word.length <= 20) {
+        targetWord.word.push({
+          id: -1,
+          value: e.key,
+          isError: true,
+          isTyped: true,
+          isDeletable: true,
+        });
+      }
+    }
 
-      return newObject;
-    });
+    setWordsObject(newObject);
   };
-
-  if (!wordsObject.length) return <>Loading...</>;
 
   return (
     <>
@@ -140,10 +178,10 @@ const Home = () => {
           return (
             <div
               className={`w-fit${
-                wordsError[i] ? " underline decoration-red-500" : ""
+                wordObject.isError ? " underline decoration-red-500" : ""
               }`}
             >
-              {wordObject.map(({ id, value, isError, isTyped }) => {
+              {wordObject.word.map(({ id, value, isError, isTyped }) => {
                 let letterClassName = "";
                 if (isTyped && isError) {
                   letterClassName = "text-red-800";
@@ -161,8 +199,8 @@ const Home = () => {
 
       <input
         ref={inputRef}
-        // className="opacity-0 p-0 m-0 absolute select-none"
-        className="p-0 m-0 absolute select-none text-black"
+        className="opacity-0 p-0 m-0 absolute select-none"
+        // className="p-0 m-0 absolute select-none text-black"
         value={value}
         onFocus={() => setInputFocus(true)}
         onBlur={() => setInputFocus(false)}
