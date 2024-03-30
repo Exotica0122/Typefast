@@ -1,184 +1,179 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import words from "../words/words.json";
+import { keysToTrack } from "../utils/keysToTrack";
 
-import { useState, useEffect } from "react";
-
-type QuotableType = {
-  _id: string;
-  content: string;
-  author: string;
-  tags: string[];
-  authorSlug: string;
-  length: number;
-  dateAdded: string;
-  dateModified: string;
+type RandomWord = {
+  id: number;
+  value: string;
+  isTyped: boolean;
+  isError: boolean;
+  isDeletable: boolean;
 };
 
-const fetchChallengeWords = async () => {
-  const response = await fetch(url);
-  const json = (await response.json()) as QuotableType;
-  const splitWords = json.content.split(" ");
-  return splitWords;
-};
+function generateRandomWords() {
+  let randomWords = "";
+  for (let i = 0; i < 100; ++i) {
+    randomWords += words.words[Math.floor(Math.random() * words.length)] + " ";
+  }
 
-const url = "http://api.quotable.io/random?minLength=300";
+  let idCounter = 0;
+  const randomWordsObject: RandomWord[][] = randomWords
+    .split(" ")
+    .map((word, i) => {
+      return word.split("").map((letter, j) => {
+        return {
+          id: idCounter++,
+          value: letter,
+          isTyped: false,
+          isError: false,
+          isDeletable: false,
+        };
+      });
+    });
 
-const MonkeyTypeClone = () => {
-  const {
-    data: words,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ["challenge-words"],
-    queryFn: async () => await fetchChallengeWords(),
-    refetchOnWindowFocus: false,
-  });
+  return { randomWordsObject, randomWords };
+}
 
-  const [input, setInput] = useState("");
+const Home = () => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [words, setWords] = useState("");
+  const [wordsArray, setWordsArray] = useState<string[]>([]);
+  const [wordsObject, setWordsObject] = useState<RandomWord[][]>([]);
+  const [wordsError, setWordsError] = useState<string[]>([]);
+  const [inputFocus, setInputFocus] = useState(false);
+
+  const [value, setValue] = useState("");
+  const [started, setStarted] = useState(false);
+
+  const [globalLetterIndex, setGlobalLetterIndex] = useState(0);
+  const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [errors, setErrors] = useState<number[]>([]);
-  const [timer, setTimer] = useState<number | null>(null);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [endTime, setEndTime] = useState<number | null>(null);
-  const [finished, setFinished] = useState(false);
-  const [wordsPerMinute, setWordsPerMinute] = useState<number | null>(null);
+  const [backspaceMinPosition, setBackspaceMinPosition] = useState(0);
 
   useEffect(() => {
-    if (timer !== null && timer > 0 && !finished) {
-      const intervalId = setInterval(() => {
-        setTimer(timer - 1);
-      }, 1000);
+    inputRef.current?.focus();
+    setInputFocus(true);
 
-      return () => clearInterval(intervalId);
-    } else if (timer === 0 && !finished) {
-      setEndTime(Date.now());
-      setFinished(true);
+    const { randomWords, randomWordsObject } = generateRandomWords();
+    setWords(randomWords);
+    setWordsArray(randomWords.split(" "));
+    setWordsObject(randomWordsObject);
+  }, []);
+
+  const handleTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.code === "Backspace") {
+      if (currentLetterIndex === 0) return;
+      setValue((prevValue) => prevValue.slice(0, -1));
+      setWordsObject((prevObject) => {
+        const newObject = [...prevObject];
+        const targetWord = newObject[currentWordIndex];
+        const targetLetter = targetWord[currentLetterIndex - 1];
+        console.log(targetLetter);
+
+        if (!targetLetter.isDeletable) {
+          targetLetter.isTyped = false;
+          targetLetter.isError = false;
+        } else {
+          targetWord.pop();
+        }
+
+        console.log(targetWord);
+        return newObject;
+      });
+      setCurrentLetterIndex((prevIndex) => prevIndex - 1);
+      return;
     }
-  }, [timer, finished]);
 
-  useEffect(() => {
-    if (startTime !== null && endTime !== null && !finished) {
-      const timeDifferenceInSeconds = (endTime - startTime) / 1000;
-      const wordsTyped = currentWordIndex;
-      const wordsPerMinute = Math.round(
-        (wordsTyped / timeDifferenceInSeconds) * 60
-      );
-      setWordsPerMinute(wordsPerMinute);
-      setFinished(true);
-    }
-  }, [endTime]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!words) return;
-
-    if (!timer) {
-      setStartTime(Date.now());
-      setTimer(30);
+    if (!keysToTrack.includes(e.code)) {
+      return;
     }
 
-    const typedValue = e.target.value;
-    setInput(typedValue);
+    if (e.code === "Space") {
+      setCurrentWordIndex((currIndex) => currIndex + 1);
+      setCurrentLetterIndex(0);
+      setValue("");
+      return;
+    }
 
-    const currentWord = words[currentWordIndex];
-    const currentErrors = [];
-    for (let i = 0; i < typedValue.length; i++) {
-      if (typedValue[i] !== currentWord[i]) {
-        currentErrors.push(i);
+    if (value.length <= 20) {
+      setValue((prevValue) => prevValue + e.key);
+      setCurrentLetterIndex((prevIndex) => prevIndex + 1);
+    }
+
+    setWordsObject((prevObject) => {
+      const newObject = [...prevObject];
+      const targetWord = newObject[currentWordIndex];
+      const targetLetter = targetWord[currentLetterIndex];
+
+      // If letter typed is in bound with words
+      if (currentLetterIndex < targetWord.length) {
+        targetLetter["isTyped"] = true;
+        if (targetLetter.value !== e.key) {
+          targetLetter["isError"] = true;
+        }
+        // Handle when more letter typed
+      } else {
+        if (targetWord.length <= 20) {
+          targetWord.push({
+            id: -1,
+            value: e.key,
+            isError: true,
+            isTyped: true,
+            isDeletable: true,
+          });
+        }
       }
-    }
-    setErrors(currentErrors);
 
-    const lastValue = typedValue[typedValue.length - 1];
-
-    // Check if word is completed
-    if (lastValue === " ") {
-      setInput("");
-      setCurrentWordIndex(currentWordIndex + 1);
-      setErrors([]);
-
-      if (currentWordIndex === words.length - 1) {
-        setEndTime(Date.now());
-      }
-    }
+      return newObject;
+    });
   };
 
-  const handleRestart = () => {
-    setInput("");
-    setCurrentWordIndex(0);
-    setErrors([]);
-    setTimer(null);
-    setStartTime(null);
-    setEndTime(null);
-    setFinished(false);
-    setWordsPerMinute(null);
-  };
-
-  const renderWord = (word: string, index: number) => {
-    if (index < currentWordIndex) {
-      return (
-        <span key={index} style={{ color: "green" }}>
-          {word}{" "}
-        </span>
-      );
-    } else if (index === currentWordIndex) {
-      return (
-        <span key={index}>
-          <b>{input}</b>
-          {word.slice(input.length)}{" "}
-        </span>
-      );
-    } else {
-      return <span key={index}>{word} </span>;
-    }
-  };
-
-  if (isError) {
-    return <div>Error</div>;
-  }
-
-  if (isLoading || !words) {
-    return <h1>loading...</h1>;
-  }
+  if (!wordsObject.length) return <>Loading...</>;
 
   return (
-    <div>
-      <div>
-        <h1>{words.map(renderWord)}</h1>
-        {finished ? (
-          <div>
-            <p>
-              {currentWordIndex === words.length
-                ? `Game Over! Your words per minute: ${wordsPerMinute}`
-                : "Time's up!"}
-            </p>
-            <button onClick={handleRestart}>Restart</button>
-          </div>
-        ) : (
-          <p>
-            {timer !== null
-              ? `Time left: ${timer} seconds`
-              : "Start typing to begin the timer"}
-          </p>
-        )}
-        <input
-          type="text"
-          value={input}
-          onChange={handleInputChange}
-          autoFocus
-          disabled={finished}
-        />
+    <>
+      <div
+        className="w-[80%] flex flex-wrap gap-2 text-2xl select-none"
+        onClick={() => inputRef.current?.focus()}
+      >
+        {wordsObject.map((wordObject, i) => {
+          return (
+            <div
+              className={`w-fit${
+                wordsError[i] ? " underline decoration-red-500" : ""
+              }`}
+            >
+              {wordObject.map(({ id, value, isError, isTyped }) => {
+                let letterClassName = "";
+                if (isTyped && isError) {
+                  letterClassName = "text-red-800";
+                } else if (isTyped && !isError) {
+                  letterClassName = "text-white";
+                } else {
+                  letterClassName = "text-neutral-400";
+                }
+                return <span className={`${letterClassName}`}>{value}</span>;
+              })}
+            </div>
+          );
+        })}
       </div>
-      <div>
-        <p>Current word: {input}</p>
-        {errors.length > 0 && (
-          <p style={{ color: "red" }}>
-            Incorrect keystroke(s):{" "}
-            {errors.map((i) => words[currentWordIndex][i])}
-          </p>
-        )}
-      </div>
-    </div>
+
+      <input
+        ref={inputRef}
+        // className="opacity-0 p-0 m-0 absolute select-none"
+        className="p-0 m-0 absolute select-none text-black"
+        value={value}
+        onFocus={() => setInputFocus(true)}
+        onBlur={() => setInputFocus(false)}
+        onKeyDown={handleTyping}
+        autoComplete="false"
+        autoCapitalize="false"
+        data-enable-grammarly="false"
+        spellCheck="false"
+      />
+    </>
   );
 };
 
-export default MonkeyTypeClone;
+export default Home;

@@ -9,6 +9,9 @@ module.exports = {
       gridTemplateRows: {
         layout: "auto 1fr auto",
       },
+      animation: {
+        blink: "animate-blink",
+      },
     },
   },
   plugins: [],
