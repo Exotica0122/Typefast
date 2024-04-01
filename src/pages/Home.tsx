@@ -184,10 +184,8 @@ const Home = () => {
   };
 
   const handleNewLetterTyped = (letter: string) => {
-    if (inputValue.length < 20) {
-      setInputValue((prevValue) => prevValue + letter);
-      setCurrentLetterIndex((prevIndex) => prevIndex + 1);
-    }
+    // Ignore if input length hits limit
+    if (inputValue.length >= 20) return;
 
     const newObject = [...wordsObject];
     const targetWord = newObject[currentWordIndex];
@@ -197,23 +195,24 @@ const Home = () => {
     if (currentLetterIndex < targetWord.word.length) {
       targetLetter.isTyped = true;
       targetLetter.typedValue = letter;
+
       if (targetLetter.value !== letter) {
         targetLetter.isError = true;
       }
-      // Handle when more letter typed
     } else {
-      if (targetWord.word.length < 20) {
-        targetWord.word.push({
-          id: -1,
-          value: letter,
-          typedValue: letter,
-          isError: true,
-          isTyped: true,
-          isDeletable: true,
-        });
-      }
+      // Handle when more letter typed
+      targetWord.word.push({
+        id: -1,
+        value: letter,
+        typedValue: letter,
+        isError: true,
+        isTyped: true,
+        isDeletable: true,
+      });
     }
 
+    setInputValue((prevValue) => prevValue + letter);
+    setCurrentLetterIndex((prevIndex) => prevIndex + 1);
     setWordsObject(newObject);
   };
 
