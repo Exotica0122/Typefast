@@ -41,6 +41,7 @@ const Home = () => {
           seconds={seconds}
           isStarted={isStarted}
           isFinished={isFinished}
+          caretElementPosition={caretElementPosition}
         />
       )}
 
@@ -74,7 +75,10 @@ const Home = () => {
         spellCheck="false"
       />
 
-      <button className="mt-4 px-6 py-2" onClick={handleRestart}>
+      <button
+        className="mt-4 px-6 py-2 text-neutral-400 hover:text-neutral-100 transition-colors"
+        onClick={handleRestart}
+      >
         <FaRedo width={20} height={20} />
       </button>
     </>
