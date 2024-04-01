@@ -137,7 +137,9 @@ const Home = () => {
       setCurrentWordIndex((prevIndex) => prevIndex - 1);
       setInputValue(
         wordsObject[currentWordIndex - 1].word
-          .map(({ value, isTyped }) => (isTyped ? value : ""))
+          .map(({ isTyped, typedValue }) =>
+            isTyped && typedValue ? typedValue : ""
+          )
           .join("")
       );
       return;
@@ -193,9 +195,10 @@ const Home = () => {
 
     // If letter typed is in bound with words
     if (currentLetterIndex < targetWord.word.length) {
-      targetLetter["isTyped"] = true;
+      targetLetter.isTyped = true;
+      targetLetter.typedValue = letter;
       if (targetLetter.value !== letter) {
-        targetLetter["isError"] = true;
+        targetLetter.isError = true;
       }
       // Handle when more letter typed
     } else {
@@ -203,6 +206,7 @@ const Home = () => {
         targetWord.word.push({
           id: -1,
           value: letter,
+          typedValue: letter,
           isError: true,
           isTyped: true,
           isDeletable: true,

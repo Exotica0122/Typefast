@@ -3,6 +3,7 @@ import wordsJSON from "../words/words.json";
 type RandomLetter = {
   id: number;
   value: string;
+  typedValue?: string;
   isTyped: boolean;
   isError: boolean;
   isDeletable: boolean;
