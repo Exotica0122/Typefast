@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { generateRandomWords, keysToTrack, RandomWord } from '../utils/utils';
+import { useState, useEffect, useRef } from "react";
+import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 
 const SECONDS_TIMER = 30;
 const MINUTES_IN_SECONDS = 60;
@@ -9,7 +9,7 @@ export const useTypefast = () => {
   const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const wordsRef = useRef<HTMLDivElement[]>([]);
 
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [inputFocus, setInputFocus] = useState(false);
   const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -53,7 +53,7 @@ export const useTypefast = () => {
       const wordsCompleted = wordsObject.reduce(
         (count, prevWord) =>
           prevWord.isTyped && !prevWord.isError ? ++count : count,
-        0
+        0,
       );
       const durationOffset = SECONDS_TIMER / MINUTES_IN_SECONDS;
       const wpm = Math.round(wordsCompleted / durationOffset);
@@ -103,25 +103,31 @@ export const useTypefast = () => {
     const x = caretElementPosition.x + xOffset;
     let y = caretElementPosition.y + yOffset;
 
-    y = moveTextDown({ x, y });
+    y = moveText({ x, y });
 
     setCaretElementPosition({ x, y });
   };
 
-  const moveTextDown = ({ y }: { x: number; y: number }) => {
+  const moveText = ({ y }: { x: number; y: number }) => {
+    if (y < 0) {
+      setMainTextTranslateDistance(0);
+      return 0;
+    }
+
     if (currentLetterIndex === 0 && y > 40) {
       setMainTextTranslateDistance((prevDistance) => (prevDistance -= y / 2));
       return y / 2;
     }
+
     return y;
   };
 
   const handleEnableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
-      e.code === 'MetaLeft' ||
-      e.code === 'MetaRight' ||
-      e.code === 'AltLeft' ||
-      e.code === 'ControlLeft'
+      e.code === "MetaLeft" ||
+      e.code === "MetaRight" ||
+      e.code === "AltLeft" ||
+      e.code === "ControlLeft"
     ) {
       setDisableInput(false);
       return;
@@ -130,18 +136,18 @@ export const useTypefast = () => {
 
   const handleDisableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
-      e.code === 'Tab' ||
-      e.code === 'Enter' ||
-      (e.code === 'Space' && currentLetterIndex === 0 && currentWordIndex === 0)
+      e.code === "Tab" ||
+      e.code === "Enter" ||
+      (e.code === "Space" && currentLetterIndex === 0 && currentWordIndex === 0)
     ) {
       return true;
     }
 
     if (
-      e.code === 'MetaLeft' ||
-      e.code === 'MetaRight' ||
-      e.code === 'AltLeft' ||
-      e.code === 'ControlLeft'
+      e.code === "MetaLeft" ||
+      e.code === "MetaRight" ||
+      e.code === "AltLeft" ||
+      e.code === "ControlLeft"
     ) {
       setDisableInput(true);
       return true;
@@ -169,7 +175,7 @@ export const useTypefast = () => {
         currentWordIndex - 1
       ].word.reduce(
         (count, prevValue) => (prevValue.isTyped ? ++count : count),
-        0
+        0,
       );
 
       wordsObject[currentWordIndex - 1].isError = false;
@@ -179,9 +185,9 @@ export const useTypefast = () => {
       setInputValue(
         wordsObject[currentWordIndex - 1].word
           .map(({ isTyped, typedValue }) =>
-            isTyped && typedValue ? typedValue : ''
+            isTyped && typedValue ? typedValue : "",
           )
-          .join('')
+          .join(""),
       );
       handleCaret(currentWordIndex - 1, newCurrentLetterIndex);
       return;
@@ -223,7 +229,7 @@ export const useTypefast = () => {
     setWordsObject(newWordsObject);
     setCurrentWordIndex((currIndex) => currIndex + 1);
     setCurrentLetterIndex(0);
-    setInputValue('');
+    setInputValue("");
     handleCaret(currentWordIndex + 1, 0);
   };
 
@@ -275,7 +281,7 @@ export const useTypefast = () => {
       setIsStarted(true);
     }
 
-    if (e.code === 'Backspace') {
+    if (e.code === "Backspace") {
       handleBackspace();
       return;
     }
@@ -286,7 +292,7 @@ export const useTypefast = () => {
     }
 
     // Handle space
-    if (e.code === 'Space') {
+    if (e.code === "Space") {
       handleSpace();
       return;
     }
@@ -302,7 +308,7 @@ export const useTypefast = () => {
     setCurrentLetterIndex(0);
     setCurrentWordIndex(0);
 
-    setInputValue('');
+    setInputValue("");
     setIsStarted(false);
     setIsFinished(false);
     setSeconds(SECONDS_TIMER);
