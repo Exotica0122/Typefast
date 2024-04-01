@@ -110,7 +110,7 @@ export const useTypefast = () => {
 
   const moveText = ({ y }: { x: number; y: number }) => {
     if (y < 0) {
-      setMainTextTranslateDistance(0);
+      setMainTextTranslateDistance((prevDistance) => (prevDistance -= y));
       return 0;
     }
 
