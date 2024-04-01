@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Ubuntu", "san-serif"],
+        sans: ["JetBrains Mono", "san-serif"],
       },
       gridTemplateRows: {
         layout: "auto 1fr auto",
