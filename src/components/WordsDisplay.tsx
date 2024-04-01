@@ -16,7 +16,7 @@ export const WordsDisplay = ({
 }: WordsDisplayProps) => {
   return (
     <div
-      className="flex flex-wrap gap-2 text-2xl select-none transition-transform"
+      className="flex select-none flex-wrap gap-2 text-2xl transition-transform duration-100"
       style={{
         transform: `translateY(${mainTextTranslateDistance}px)`,
       }}

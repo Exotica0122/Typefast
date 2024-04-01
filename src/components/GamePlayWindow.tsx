@@ -26,9 +26,9 @@ export const GamePlayWindow = ({
   seconds,
 }: GamePlayWindowProps) => {
   return (
-    <div className="w-[80%] relative">
+    <div className="relative w-[80%]">
       <Timer isStarted={isStarted} seconds={seconds} />
-      <div className="overflow-hidden h-40">
+      <div className="h-40 overflow-hidden">
         <Caret caretElementPosition={caretElementPosition} ref={caretRef} />
         <WordsDisplay
           wordsRef={wordsRef}
