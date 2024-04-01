@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 
-const SECONDS_TIMER = 10;
+const SECONDS_TIMER = 30;
 const MINUTES_IN_SECONDS = 60;
 
 export const useTypefast = () => {
