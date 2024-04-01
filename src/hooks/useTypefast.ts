@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
+import { useState, useEffect, useRef } from 'react';
+import { generateRandomWords, keysToTrack, RandomWord } from '../utils/utils';
 
 const SECONDS_TIMER = 30;
 const MINUTES_IN_SECONDS = 60;
@@ -9,7 +9,7 @@ export const useTypefast = () => {
   const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const wordsRef = useRef<HTMLDivElement[]>([]);
 
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [inputFocus, setInputFocus] = useState(false);
   const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -62,19 +62,7 @@ export const useTypefast = () => {
     return () => clearInterval(interval);
   }, [isStarted, seconds]);
 
-  // @TODO: hack around for now. Move this to the handler
-  useEffect(() => {
-    if (isStarted) {
-      handleCaret();
-    }
-  }, [currentWordIndex, currentLetterIndex]);
-
-  // @TODO: hack around for now. Move this to the handler
-  useEffect(() => {
-    checkIfMoveText();
-  }, [caretElementPosition]);
-
-  const handleCaret = () => {
+  const handleCaret = (wordIndex: number, letterIndex: number) => {
     if (!caretRef || !caretRef.current) {
       return;
     }
@@ -85,52 +73,55 @@ export const useTypefast = () => {
     let newCaretPositionX = 0;
     let newCaretPositionY = 0;
 
-    if (currentLetterIndex === 0) {
+    if (letterIndex === 0) {
       newCaretPositionX =
-        wordsRef.current[currentWordIndex].childNodes[
-          currentLetterIndex
+        wordsRef.current[wordIndex].childNodes[
+          letterIndex
           // @ts-ignore
         ].getBoundingClientRect().left;
       newCaretPositionY =
-        wordsRef.current[currentWordIndex].childNodes[
-          currentLetterIndex
+        wordsRef.current[wordIndex].childNodes[
+          letterIndex
           // @ts-ignore
         ].getBoundingClientRect().top;
     } else {
       newCaretPositionX =
-        wordsRef.current[currentWordIndex].childNodes[
-          currentLetterIndex - 1
+        wordsRef.current[wordIndex].childNodes[
+          letterIndex - 1
           // @ts-ignore
         ].getBoundingClientRect().right;
       newCaretPositionY =
-        wordsRef.current[currentWordIndex].childNodes[
-          currentLetterIndex - 1
+        wordsRef.current[wordIndex].childNodes[
+          letterIndex - 1
           // @ts-ignore
         ].getBoundingClientRect().top;
     }
 
     const xOffset = newCaretPositionX - caretPositionX;
     const yOffset = newCaretPositionY - caretPositionY;
-    setCaretElementPosition((prevPosition) => ({
-      x: (prevPosition.x += xOffset),
-      y: (prevPosition.y += yOffset),
-    }));
+
+    const x = caretElementPosition.x + xOffset;
+    let y = caretElementPosition.y + yOffset;
+
+    y = moveTextDown({ x, y });
+
+    setCaretElementPosition({ x, y });
   };
 
-  const checkIfMoveText = () => {
-    if (currentLetterIndex === 0 && caretElementPosition.y > 40) {
-      setMainTextTranslateDistance(
-        (prevDistance) => (prevDistance -= caretElementPosition.y / 2)
-      );
+  const moveTextDown = ({ y }: { x: number; y: number }) => {
+    if (currentLetterIndex === 0 && y > 40) {
+      setMainTextTranslateDistance((prevDistance) => (prevDistance -= y / 2));
+      return y / 2;
     }
+    return y;
   };
 
   const handleEnableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
-      e.code === "MetaLeft" ||
-      e.code === "MetaRight" ||
-      e.code === "AltLeft" ||
-      e.code === "ControlLeft"
+      e.code === 'MetaLeft' ||
+      e.code === 'MetaRight' ||
+      e.code === 'AltLeft' ||
+      e.code === 'ControlLeft'
     ) {
       setDisableInput(false);
       return;
@@ -139,18 +130,18 @@ export const useTypefast = () => {
 
   const handleDisableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (
-      e.code === "Tab" ||
-      e.code === "Enter" ||
-      (e.code === "Space" && currentLetterIndex === 0 && currentWordIndex === 0)
+      e.code === 'Tab' ||
+      e.code === 'Enter' ||
+      (e.code === 'Space' && currentLetterIndex === 0 && currentWordIndex === 0)
     ) {
       return true;
     }
 
     if (
-      e.code === "MetaLeft" ||
-      e.code === "MetaRight" ||
-      e.code === "AltLeft" ||
-      e.code === "ControlLeft"
+      e.code === 'MetaLeft' ||
+      e.code === 'MetaRight' ||
+      e.code === 'AltLeft' ||
+      e.code === 'ControlLeft'
     ) {
       setDisableInput(true);
       return true;
@@ -188,10 +179,11 @@ export const useTypefast = () => {
       setInputValue(
         wordsObject[currentWordIndex - 1].word
           .map(({ isTyped, typedValue }) =>
-            isTyped && typedValue ? typedValue : ""
+            isTyped && typedValue ? typedValue : ''
           )
-          .join("")
+          .join('')
       );
+      handleCaret(currentWordIndex - 1, newCurrentLetterIndex);
       return;
     }
 
@@ -210,6 +202,7 @@ export const useTypefast = () => {
     setInputValue((prevValue) => prevValue.slice(0, -1));
     setWordsObject(newObject);
     setCurrentLetterIndex((prevIndex) => prevIndex - 1);
+    handleCaret(currentWordIndex, currentLetterIndex - 1);
   };
 
   const handleSpace = () => {
@@ -230,7 +223,8 @@ export const useTypefast = () => {
     setWordsObject(newWordsObject);
     setCurrentWordIndex((currIndex) => currIndex + 1);
     setCurrentLetterIndex(0);
-    setInputValue("");
+    setInputValue('');
+    handleCaret(currentWordIndex + 1, 0);
   };
 
   const handleNewLetterTyped = (letter: string) => {
@@ -264,6 +258,11 @@ export const useTypefast = () => {
     setInputValue((prevValue) => prevValue + letter);
     setCurrentLetterIndex((prevIndex) => prevIndex + 1);
     setWordsObject(newObject);
+
+    // work around to handle caret after push
+    setTimeout(() => {
+      handleCaret(currentWordIndex, currentLetterIndex + 1);
+    }, 0);
   };
 
   const handleTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -276,7 +275,7 @@ export const useTypefast = () => {
       setIsStarted(true);
     }
 
-    if (e.code === "Backspace") {
+    if (e.code === 'Backspace') {
       handleBackspace();
       return;
     }
@@ -287,7 +286,7 @@ export const useTypefast = () => {
     }
 
     // Handle space
-    if (e.code === "Space") {
+    if (e.code === 'Space') {
       handleSpace();
       return;
     }
@@ -303,7 +302,7 @@ export const useTypefast = () => {
     setCurrentLetterIndex(0);
     setCurrentWordIndex(0);
 
-    setInputValue("");
+    setInputValue('');
     setIsStarted(false);
     setIsFinished(false);
     setSeconds(SECONDS_TIMER);
