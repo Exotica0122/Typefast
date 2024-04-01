@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { FaRedo } from "react-icons/fa";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 
 const SECONDS_TIMER = 30;
@@ -21,6 +22,7 @@ const Home = () => {
   const [seconds, setSeconds] = useState(SECONDS_TIMER); // init this from context
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [mainTextTranslateDistance, setMainTextTranslateDistance] = useState(0);
 
   const caretRef = useRef<HTMLDivElement | null>(null);
   const [caretElementPosition, setCaretElementPosition] = useState({
@@ -41,7 +43,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    let interval: number;
+    let interval = 0;
     if (isStarted && seconds > 0) {
       interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds - 1);
@@ -68,6 +70,13 @@ const Home = () => {
       handleCaret();
     }
   }, [currentWordIndex, currentLetterIndex]);
+
+  // @TODO: hack around for now. Move this to the handler
+  useEffect(() => {
+    if (isStarted) {
+      checkIfMoveText();
+    }
+  }, [caretElementPosition]);
 
   const handleCaret = () => {
     if (!caretRef || !caretRef.current) {
@@ -110,6 +119,14 @@ const Home = () => {
       x: (prevPosition.x += xOffset),
       y: (prevPosition.y += yOffset),
     }));
+  };
+
+  const checkIfMoveText = () => {
+    if (currentLetterIndex === 0 && caretElementPosition.y > 40) {
+      setMainTextTranslateDistance(
+        (prevDistance) => (prevDistance -= caretElementPosition.y / 2)
+      );
+    }
   };
 
   const handleEnableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -282,10 +299,12 @@ const Home = () => {
     handleNewLetterTyped(e.key);
   };
 
+  const handleRestart = () => {};
+
   return (
     <>
       {DEV_MODE && (
-        <div className="absolute left-0 top-0 text-yellow-300">
+        <div className="absolute left-0 top-0 text-yellow-300 select-none">
           <h1>Input Focus: {String(inputFocus)}</h1>
           <h1>Disable Input: {String(disableInput)}</h1>
           <h1>Game Started: {String(isStarted)}</h1>
@@ -298,82 +317,98 @@ const Home = () => {
         </div>
       )}
       {!isFinished ? (
-        <div className="w-[80%] relative">
-          {/* Caret */}
-          <div
-            className={`animate-blink absolute mt-1 h-6 w-[2px] bg-yellow-300`}
-            style={{
-              transform: `translate(${caretElementPosition.x}px, ${caretElementPosition.y}px)`,
-            }}
-            ref={caretRef}
-          />
-          {
+        <>
+          <div className="w-[80%] relative">
+            {/* Timer */}
             <h1
-              className={`absolute -top-8 text-xl text-yellow-300 font-normal select-none transition-opacity ${
-                !isStarted ? "opacity-0" : "opacity-100"
+              className={`absolute left-0 -top-8 text-xl text-yellow-300 select-none transition-opacity duration-500 ${
+                isStarted ? "opacity-100" : "opacity-0"
               }`}
             >
               {seconds}
             </h1>
-          }
-          <div
-            className="flex flex-wrap gap-2 text-2xl select-none"
-            onClick={() => inputRef.current?.focus()}
-          >
-            {wordsObject.map((wordObject, i) => {
-              return (
-                <div
-                  key={wordObject.id}
-                  className={`w-fit${
-                    wordObject.isError ? " underline decoration-red-500" : ""
-                  }`}
-                  ref={(el) => {
-                    if (!el) return;
-                    wordsRef.current[i] = el;
-                  }}
-                >
-                  {wordObject.word.map(({ id, value, isError, isTyped }) => {
-                    let letterClassName = "";
-                    if (isTyped && isError) {
-                      letterClassName = "text-red-800";
-                    } else if (isTyped && !isError) {
-                      letterClassName = "text-white";
-                    } else {
-                      letterClassName = "text-neutral-400";
-                    }
-                    return (
-                      <span
-                        key={`${wordObject.id}-${id}`}
-                        className={`${letterClassName}`}
-                      >
-                        {value}
-                      </span>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
 
-          <input
-            readOnly
-            ref={inputRef}
-            className="opacity-0 p-0 m-0 absolute select-none"
-            value={inputValue}
-            onFocus={() => setInputFocus(true)}
-            onBlur={() => setInputFocus(false)}
-            onKeyDown={handleTyping}
-            onKeyUp={handleEnableTyping}
-            disabled={isFinished}
-            autoComplete="false"
-            autoCapitalize="false"
-            data-enable-grammarly="false"
-            spellCheck="false"
-          />
-        </div>
+            <div className="overflow-hidden h-40">
+              {/* Caret */}
+              <div
+                className={`animate-blink absolute pt-1 h-6 w-[2px] bg-yellow-300`}
+                style={{
+                  transform: `translate(${caretElementPosition.x}px, ${caretElementPosition.y}px)`,
+                }}
+                ref={caretRef}
+              />
+
+              <div
+                className="flex flex-wrap gap-2 text-2xl select-none transition-transform"
+                style={{
+                  transform: `translateY(${mainTextTranslateDistance}px)`,
+                }}
+                onClick={() => inputRef.current?.focus()}
+              >
+                {wordsObject.map((wordObject, i) => {
+                  return (
+                    <div
+                      key={wordObject.id}
+                      className={`w-fit${
+                        wordObject.isError
+                          ? " underline decoration-red-500"
+                          : ""
+                      }`}
+                      ref={(el) => {
+                        if (!el) return;
+                        wordsRef.current[i] = el;
+                      }}
+                    >
+                      {wordObject.word.map(
+                        ({ id, value, isError, isTyped }) => {
+                          let letterClassName = "";
+                          if (isTyped && isError) {
+                            letterClassName = "text-red-800";
+                          } else if (isTyped && !isError) {
+                            letterClassName = "text-white";
+                          } else {
+                            letterClassName = "text-neutral-400";
+                          }
+                          return (
+                            <span
+                              key={`${wordObject.id}-${id}`}
+                              className={`${letterClassName}`}
+                            >
+                              {value}
+                            </span>
+                          );
+                        }
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </>
       ) : (
         <div>WPM: {wpm}</div>
       )}
+
+      <input
+        readOnly
+        ref={inputRef}
+        className="opacity-0 p-0 m-0 absolute select-none"
+        value={inputValue}
+        onFocus={() => setInputFocus(true)}
+        onBlur={() => setInputFocus(false)}
+        onKeyDown={handleTyping}
+        onKeyUp={handleEnableTyping}
+        disabled={isFinished}
+        autoComplete="false"
+        autoCapitalize="false"
+        data-enable-grammarly="false"
+        spellCheck="false"
+      />
+
+      <button className="mt-4 px-6 py-2" onClick={handleRestart}>
+        <FaRedo width={20} height={20} />
+      </button>
     </>
   );
 };
