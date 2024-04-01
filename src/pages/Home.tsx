@@ -299,7 +299,25 @@ const Home = () => {
     handleNewLetterTyped(e.key);
   };
 
-  const handleRestart = () => {};
+  const handleRestart = () => {
+    inputRef.current?.focus();
+    setInputFocus(true);
+
+    const { randomWords, randomWordsObject } = generateRandomWords(100);
+    setWords(randomWords);
+    setWordsObject(randomWordsObject);
+
+    setCurrentLetterIndex(0);
+    setCurrentWordIndex(0);
+
+    setInputValue("");
+    setIsStarted(false);
+    setIsFinished(false);
+    setSeconds(SECONDS_TIMER);
+    setCaretElementPosition({ x: 0, y: 0 });
+    setMainTextTranslateDistance(0);
+    setWpm(0);
+  };
 
   return (
     <>
