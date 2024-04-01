@@ -1,3 +1,47 @@
+import wordsJSON from "../words/words.json";
+
+type RandomLetter = {
+  id: number;
+  value: string;
+  isTyped: boolean;
+  isError: boolean;
+  isDeletable: boolean;
+};
+
+export type RandomWord = {
+  isTyped: boolean;
+  isError: boolean;
+  word: RandomLetter[];
+};
+
+export function generateRandomWords(length: number) {
+  const randomWords = [];
+  for (let i = 0; i < length; ++i) {
+    const randomWord =
+      wordsJSON.words[Math.floor(Math.random() * wordsJSON.length)];
+    randomWords.push(randomWord);
+  }
+
+  let idCounter = 0;
+  const randomWordsObject: RandomWord[] = randomWords.map((word) => {
+    return {
+      isTyped: false,
+      isError: false,
+      word: word.split("").map((letter, j) => {
+        return {
+          id: idCounter++,
+          value: letter,
+          isTyped: false,
+          isError: false,
+          isDeletable: false,
+        };
+      }),
+    };
+  });
+
+  return { randomWordsObject, randomWords };
+}
+
 export const keysToTrack = [
   "NumpadMultiply",
   "NumpadSubtract",
