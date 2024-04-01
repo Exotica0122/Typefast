@@ -8,12 +8,12 @@ export const Caret = forwardRef<HTMLDivElement | null, CaretProps>(
   ({ caretElementPosition: position }, ref) => {
     return (
       <div
-        className={`animate-blink absolute pt-1 h-6 w-[2px] bg-yellow-300`}
+        className={`absolute h-6 w-[2px] animate-blink bg-yellow-300 pt-1 transition-transform duration-75`}
         style={{
           transform: `translate(${position.x}px, ${position.y}px)`,
         }}
         ref={ref}
       />
     );
-  }
+  },
 );

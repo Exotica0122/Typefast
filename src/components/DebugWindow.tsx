@@ -7,6 +7,10 @@ type DebugWindowProps = {
   seconds: number;
   isStarted: boolean;
   isFinished: boolean;
+  caretElementPosition: {
+    x: number;
+    y: number;
+  };
 };
 
 export const DebugWindow = ({
@@ -18,6 +22,7 @@ export const DebugWindow = ({
   isFinished,
   isStarted,
   seconds,
+  caretElementPosition,
 }: DebugWindowProps) => {
   return (
     <div className="absolute left-0 top-0 text-yellow-300 select-none">
@@ -29,6 +34,8 @@ export const DebugWindow = ({
       <h1>Seconds: {seconds}</h1>
       <h1>Is Started: {String(isStarted)}</h1>
       <h1>Is Finished: {String(isFinished)}</h1>
+      <h1>Caret Position X: {caretElementPosition.x}</h1>
+      <h1>Caret Position Y: {caretElementPosition.y}</h1>
     </div>
   );
 };
