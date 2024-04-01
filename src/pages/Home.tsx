@@ -248,8 +248,6 @@ const Home = () => {
       });
     }
 
-    console.log(newObject);
-
     setInputValue((prevValue) => prevValue + letter);
     setCurrentLetterIndex((prevIndex) => prevIndex + 1);
     setWordsObject(newObject);
