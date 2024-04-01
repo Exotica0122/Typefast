@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 
+const SECONDS_TIMER = 30;
+const MINUTES_IN_SECONDS = 60;
+
 const Home = () => {
   const DEV_MODE = import.meta.env.DEV ?? false;
 
@@ -13,7 +16,9 @@ const Home = () => {
   const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [started, setStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [seconds, setSeconds] = useState(SECONDS_TIMER); // init this from context
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
@@ -22,6 +27,8 @@ const Home = () => {
     x: 0,
     y: 0,
   });
+
+  const [wpm, setWpm] = useState(0);
 
   // Init game
   useEffect(() => {
@@ -33,9 +40,31 @@ const Home = () => {
     setWordsObject(randomWordsObject);
   }, []);
 
+  useEffect(() => {
+    let interval: number;
+    if (isStarted && seconds > 0) {
+      interval = setInterval(() => {
+        setSeconds((prevSeconds) => prevSeconds - 1);
+      }, 1000);
+    } else if (seconds === 0) {
+      clearInterval(interval);
+      setIsStarted(false);
+      setIsFinished(true);
+
+      const wordsCompleted = wordsObject.reduce(
+        (count, prevWord) =>
+          prevWord.isTyped && !prevWord.isError ? ++count : count,
+        0
+      );
+      const durationOffset = SECONDS_TIMER / MINUTES_IN_SECONDS;
+      setWpm(wordsCompleted / durationOffset);
+    }
+    return () => clearInterval(interval);
+  }, [isStarted, seconds]);
+
   // @TODO: hack around for now. Move this to the handler
   useEffect(() => {
-    if (started) {
+    if (isStarted) {
       handleCaret();
     }
   }, [currentWordIndex, currentLetterIndex]);
@@ -96,6 +125,14 @@ const Home = () => {
   };
 
   const handleDisableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      e.code === "Tab" ||
+      e.code === "Enter" ||
+      (e.code === "Space" && currentLetterIndex === 0 && currentWordIndex === 0)
+    ) {
+      return true;
+    }
+
     if (
       e.code === "MetaLeft" ||
       e.code === "MetaRight" ||
@@ -202,7 +239,7 @@ const Home = () => {
     } else {
       // Handle when more letter typed
       targetWord.word.push({
-        id: -1,
+        id: -currentLetterIndex,
         value: letter,
         typedValue: letter,
         isError: true,
@@ -210,6 +247,8 @@ const Home = () => {
         isDeletable: true,
       });
     }
+
+    console.log(newObject);
 
     setInputValue((prevValue) => prevValue + letter);
     setCurrentLetterIndex((prevIndex) => prevIndex + 1);
@@ -222,8 +261,8 @@ const Home = () => {
     if (handleDisableTyping(e)) return;
 
     // Start game loop
-    if (!started) {
-      setStarted(true);
+    if (!isStarted) {
+      setIsStarted(true);
     }
 
     if (e.code === "Backspace") {
@@ -251,66 +290,92 @@ const Home = () => {
         <div className="absolute left-0 top-0 text-yellow-300">
           <h1>Input Focus: {String(inputFocus)}</h1>
           <h1>Disable Input: {String(disableInput)}</h1>
-          <h1>Game Started: {String(started)}</h1>
+          <h1>Game Started: {String(isStarted)}</h1>
           <h1>Input Value: {inputValue}</h1>
           <h1>Current word index: {currentWordIndex}</h1>
           <h1>Current letter index: {currentLetterIndex}</h1>
+          <h1>Seconds: {seconds}</h1>
+          <h1>Is Started: {String(isStarted)}</h1>
+          <h1>Is Finished: {String(isFinished)}</h1>
         </div>
       )}
-      <div className="w-[80%]">
-        {/* Caret */}
-        <div
-          className={`animate-blink absolute mt-1 h-6 w-[2px] bg-yellow-300`}
-          style={{
-            transform: `translate(${caretElementPosition.x}px, ${caretElementPosition.y}px)`,
-          }}
-          ref={caretRef}
-        />
-        <div
-          className="flex flex-wrap gap-2 text-2xl select-none"
-          onClick={() => inputRef.current?.focus()}
-        >
-          {wordsObject.map((wordObject, i) => {
-            return (
-              <div
-                className={`w-fit${
-                  wordObject.isError ? " underline decoration-red-500" : ""
-                }`}
-                ref={(el) => {
-                  if (!el) return;
-                  wordsRef.current[i] = el;
-                }}
-              >
-                {wordObject.word.map(({ id, value, isError, isTyped }) => {
-                  let letterClassName = "";
-                  if (isTyped && isError) {
-                    letterClassName = "text-red-800";
-                  } else if (isTyped && !isError) {
-                    letterClassName = "text-white";
-                  } else {
-                    letterClassName = "text-neutral-400";
-                  }
-                  return <span className={`${letterClassName}`}>{value}</span>;
-                })}
-              </div>
-            );
-          })}
-        </div>
+      {!isFinished ? (
+        <div className="w-[80%] relative">
+          {/* Caret */}
+          <div
+            className={`animate-blink absolute mt-1 h-6 w-[2px] bg-yellow-300`}
+            style={{
+              transform: `translate(${caretElementPosition.x}px, ${caretElementPosition.y}px)`,
+            }}
+            ref={caretRef}
+          />
+          {
+            <h1
+              className={`absolute -top-8 text-xl text-yellow-300 font-normal select-none transition-opacity ${
+                !isStarted ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              {seconds}
+            </h1>
+          }
+          <div
+            className="flex flex-wrap gap-2 text-2xl select-none"
+            onClick={() => inputRef.current?.focus()}
+          >
+            {wordsObject.map((wordObject, i) => {
+              return (
+                <div
+                  key={wordObject.id}
+                  className={`w-fit${
+                    wordObject.isError ? " underline decoration-red-500" : ""
+                  }`}
+                  ref={(el) => {
+                    if (!el) return;
+                    wordsRef.current[i] = el;
+                  }}
+                >
+                  {wordObject.word.map(({ id, value, isError, isTyped }) => {
+                    let letterClassName = "";
+                    if (isTyped && isError) {
+                      letterClassName = "text-red-800";
+                    } else if (isTyped && !isError) {
+                      letterClassName = "text-white";
+                    } else {
+                      letterClassName = "text-neutral-400";
+                    }
+                    return (
+                      <span
+                        key={`${wordObject.id}-${id}`}
+                        className={`${letterClassName}`}
+                      >
+                        {value}
+                      </span>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
 
-        <input
-          ref={inputRef}
-          className="opacity-0 p-0 m-0 absolute select-none"
-          value={inputValue}
-          onFocus={() => setInputFocus(true)}
-          onBlur={() => setInputFocus(false)}
-          onKeyDown={handleTyping}
-          onKeyUp={handleEnableTyping}
-          autoComplete="false"
-          autoCapitalize="false"
-          data-enable-grammarly="false"
-          spellCheck="false"
-        />
-      </div>
+          <input
+            readOnly
+            ref={inputRef}
+            className="opacity-0 p-0 m-0 absolute select-none"
+            value={inputValue}
+            onFocus={() => setInputFocus(true)}
+            onBlur={() => setInputFocus(false)}
+            onKeyDown={handleTyping}
+            onKeyUp={handleEnableTyping}
+            disabled={isFinished}
+            autoComplete="false"
+            autoCapitalize="false"
+            data-enable-grammarly="false"
+            spellCheck="false"
+          />
+        </div>
+      ) : (
+        <div>WPM: {wpm}</div>
+      )}
     </>
   );
 };

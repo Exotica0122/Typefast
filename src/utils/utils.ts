@@ -10,6 +10,7 @@ type RandomLetter = {
 };
 
 export type RandomWord = {
+  id: number;
   isTyped: boolean;
   isError: boolean;
   word: RandomLetter[];
@@ -23,14 +24,16 @@ export function generateRandomWords(length: number) {
     randomWords.push(randomWord);
   }
 
-  let idCounter = 0;
+  let wordIdCounter = 0;
+  let letterIdCounter = 0;
   const randomWordsObject: RandomWord[] = randomWords.map((word) => {
     return {
+      id: wordIdCounter++,
       isTyped: false,
       isError: false,
       word: word.split("").map((letter, j) => {
         return {
-          id: idCounter++,
+          id: letterIdCounter++,
           value: letter,
           isTyped: false,
           isError: false,
