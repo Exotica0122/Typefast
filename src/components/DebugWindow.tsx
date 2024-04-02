@@ -1,6 +1,5 @@
 type DebugWindowProps = {
   inputFocus: boolean;
-  disableInput: boolean;
   inputValue: string;
   currentWordIndex: number;
   currentLetterIndex: number;
@@ -16,7 +15,6 @@ type DebugWindowProps = {
 export const DebugWindow = ({
   currentLetterIndex,
   currentWordIndex,
-  disableInput,
   inputFocus,
   inputValue,
   isFinished,
@@ -25,9 +23,8 @@ export const DebugWindow = ({
   caretElementPosition,
 }: DebugWindowProps) => {
   return (
-    <div className="absolute left-0 top-0 text-yellow-300 select-none">
+    <div className="absolute left-0 top-0 select-none text-yellow-300">
       <h1>Input Focus: {String(inputFocus)}</h1>
-      <h1>Disable Input: {String(disableInput)}</h1>
       <h1>Input Value: {inputValue}</h1>
       <h1>Current word index: {currentWordIndex}</h1>
       <h1>Current letter index: {currentLetterIndex}</h1>
