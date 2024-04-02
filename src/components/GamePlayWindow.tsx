@@ -45,7 +45,7 @@ export const GamePlayWindow = ({
       <FocusWindow showBlur={showBlur} />
       <Timer isStarted={isStarted} seconds={seconds} />
       <div
-        className={`h-40 overflow-hidden transition-opacity duration-500 ${showBlur ? "blur" : ""}`}
+        className={`h-40 overflow-hidden transition-opacity duration-300 ${showBlur ? "blur" : ""}`}
       >
         <Caret caretElementPosition={caretElementPosition} ref={caretRef} />
         <WordsDisplay
