@@ -10,6 +10,7 @@ export const useTypefast = () => {
   const wordsRef = useRef<HTMLDivElement[]>([]);
 
   const [inputValue, setInputValue] = useState("");
+  const [inputFocus, setInputFocus] = useState(true);
   const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -31,6 +32,7 @@ export const useTypefast = () => {
   // Init game
   useEffect(() => {
     inputRef.current?.focus();
+    setInputFocus(true);
 
     const { randomWords, randomWordsObject } = generateRandomWords(100);
     setWords(randomWords);
@@ -319,7 +321,7 @@ export const useTypefast = () => {
 
   return {
     wordsObject,
-    inputFocus: inputRef.current === document.activeElement,
+    inputFocus,
     disableInput,
     inputValue,
     currentWordIndex,
@@ -336,5 +338,6 @@ export const useTypefast = () => {
     handleTyping,
     handleEnableTyping,
     handleRestart,
+    setInputFocus,
   };
 };
