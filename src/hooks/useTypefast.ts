@@ -10,7 +10,7 @@ export const useTypefast = () => {
   const wordsRef = useRef<HTMLDivElement[]>([]);
 
   const [inputValue, setInputValue] = useState("");
-  const [inputFocus, setInputFocus] = useState(false);
+  const [inputFocus, setInputFocus] = useState(true);
   const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -317,7 +317,6 @@ export const useTypefast = () => {
     setWpm(0);
 
     inputRef.current?.focus();
-    setInputFocus(true);
   };
 
   return {

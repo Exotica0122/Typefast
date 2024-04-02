@@ -55,6 +55,7 @@ const Home = () => {
           mainTextTranslateDistance={mainTextTranslateDistance}
           isStarted={isStarted}
           seconds={seconds}
+          inputFocus={inputFocus}
         />
       ) : (
         <ResultWindow wpm={wpm} />
@@ -63,12 +64,12 @@ const Home = () => {
       <input
         readOnly
         ref={inputRef}
-        className="opacity-0 p-0 m-0 absolute select-none -z-50"
+        className="absolute -z-50 m-0 select-none p-0 opacity-0"
         value={inputValue}
-        onFocus={() => setInputFocus(true)}
-        onBlur={() => setInputFocus(false)}
         onKeyDown={handleTyping}
         onKeyUp={handleEnableTyping}
+        onFocus={() => setInputFocus(true)}
+        onBlur={() => setInputFocus(false)}
         autoComplete="false"
         autoCapitalize="false"
         data-enable-grammarly="false"
@@ -76,7 +77,7 @@ const Home = () => {
       />
 
       <button
-        className="mt-4 px-6 py-2 text-neutral-400 hover:text-neutral-100 transition-colors"
+        className="mt-4 px-6 py-2 text-neutral-400 transition-colors hover:text-neutral-100"
         onClick={handleRestart}
       >
         <FaRedo width={20} height={20} />
