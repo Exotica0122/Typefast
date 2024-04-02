@@ -11,7 +11,6 @@ const Home = () => {
     wordsObject,
     currentLetterIndex,
     currentWordIndex,
-    disableInput,
     inputFocus,
     inputValue,
     isFinished,
@@ -20,13 +19,13 @@ const Home = () => {
     caretElementPosition,
     caretRef,
     mainTextTranslateDistance,
-    handleEnableTyping,
     handleRestart,
     handleTyping,
     inputRef,
     wordsRef,
     wpm,
     setInputFocus,
+    handleBackspace,
   } = useTypefast();
 
   return (
@@ -34,7 +33,6 @@ const Home = () => {
       {DEV_MODE && (
         <DebugWindow
           inputFocus={inputFocus}
-          disableInput={disableInput}
           inputValue={inputValue}
           currentWordIndex={currentWordIndex}
           currentLetterIndex={currentLetterIndex}
@@ -66,8 +64,8 @@ const Home = () => {
         ref={inputRef}
         className="absolute -z-50 m-0 select-none p-0 opacity-0"
         value={inputValue}
-        onKeyDown={handleTyping}
-        onKeyUp={handleEnableTyping}
+        onKeyDown={handleBackspace}
+        onKeyPress={handleTyping}
         onFocus={() => setInputFocus(true)}
         onBlur={() => setInputFocus(false)}
         autoComplete="false"

@@ -11,7 +11,6 @@ export const useTypefast = () => {
 
   const [inputValue, setInputValue] = useState("");
   const [inputFocus, setInputFocus] = useState(true);
-  const [disableInput, setDisableInput] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [isStarted, setIsStarted] = useState(false);
@@ -47,20 +46,24 @@ export const useTypefast = () => {
       }, 1000);
     } else if (seconds === 0) {
       clearInterval(interval);
-      setIsStarted(false);
-      setIsFinished(true);
-
-      const wordsCompleted = wordsObject.reduce(
-        (count, prevWord) =>
-          prevWord.isTyped && !prevWord.isError ? ++count : count,
-        0,
-      );
-      const durationOffset = SECONDS_TIMER / MINUTES_IN_SECONDS;
-      const wpm = Math.round(wordsCompleted / durationOffset);
-      setWpm(wpm);
+      handleGameCompleted();
     }
     return () => clearInterval(interval);
   }, [isStarted, seconds]);
+
+  const handleGameCompleted = () => {
+    setIsStarted(false);
+    setIsFinished(true);
+
+    const wordsCompleted = wordsObject.reduce(
+      (count, prevWord) =>
+        prevWord.isTyped && !prevWord.isError ? ++count : count,
+      0,
+    );
+    const durationOffset = SECONDS_TIMER / MINUTES_IN_SECONDS;
+    const wpm = Math.round(wordsCompleted / durationOffset);
+    setWpm(wpm);
+  };
 
   const handleCaret = (wordIndex: number, letterIndex: number) => {
     if (!caretRef || !caretRef.current) {
@@ -122,40 +125,9 @@ export const useTypefast = () => {
     return y;
   };
 
-  const handleEnableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      e.code === "MetaLeft" ||
-      e.code === "MetaRight" ||
-      e.code === "AltLeft" ||
-      e.code === "ControlLeft"
-    ) {
-      setDisableInput(false);
-      return;
-    }
-  };
+  const handleBackspace = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.code !== "Backspace") return;
 
-  const handleDisableTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (
-      e.code === "Tab" ||
-      e.code === "Enter" ||
-      (e.code === "Space" && currentLetterIndex === 0 && currentWordIndex === 0)
-    ) {
-      return true;
-    }
-
-    if (
-      e.code === "MetaLeft" ||
-      e.code === "MetaRight" ||
-      e.code === "AltLeft" ||
-      e.code === "ControlLeft"
-    ) {
-      setDisableInput(true);
-      return true;
-    }
-    return false;
-  };
-
-  const handleBackspace = () => {
     // Ignore when very first word and letter
     if (currentWordIndex === 0 && currentLetterIndex === 0) {
       return;
@@ -272,18 +244,11 @@ export const useTypefast = () => {
   };
 
   const handleTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Disable Input if Control button is pressed
-    if (disableInput || isFinished) return;
-    if (handleDisableTyping(e)) return;
+    if (isFinished || (!isStarted && e.key === "Enter")) return;
 
     // Start game loop
     if (!isStarted) {
       setIsStarted(true);
-    }
-
-    if (e.code === "Backspace") {
-      handleBackspace();
-      return;
     }
 
     // ignore if key is not necessary to track
@@ -322,7 +287,6 @@ export const useTypefast = () => {
   return {
     wordsObject,
     inputFocus,
-    disableInput,
     inputValue,
     currentWordIndex,
     currentLetterIndex,
@@ -336,8 +300,8 @@ export const useTypefast = () => {
     wordsRef,
     wpm,
     handleTyping,
-    handleEnableTyping,
     handleRestart,
     setInputFocus,
+    handleBackspace,
   };
 };
