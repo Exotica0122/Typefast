@@ -26,7 +26,6 @@ const Home = () => {
     inputRef,
     wordsRef,
     wpm,
-    setInputFocus,
   } = useTypefast();
 
   return (
@@ -65,8 +64,6 @@ const Home = () => {
         ref={inputRef}
         className="opacity-0 p-0 m-0 absolute select-none -z-50"
         value={inputValue}
-        onFocus={() => setInputFocus(true)}
-        onBlur={() => setInputFocus(false)}
         onKeyDown={handleTyping}
         onKeyUp={handleEnableTyping}
         autoComplete="false"
