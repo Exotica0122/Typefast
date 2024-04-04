@@ -9,10 +9,14 @@ import toast from "react-hot-toast";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
 import { AiOutlineUserAdd } from "react-icons/ai";
+import { useState } from "react";
+import { LoadingSpinner } from "../LoadingSpinner";
 
 const usernameExistsToast = () => toast.error("Username already exists.");
 
 export const Register = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -26,6 +30,7 @@ export const Register = () => {
     password,
     username,
   }) => {
+    setIsLoading(true);
     const usernameQuery = await supabase
       .from("users")
       .select("username")
@@ -34,6 +39,7 @@ export const Register = () => {
 
     if (!usernameQuery.data || usernameQuery.data.length > 0) {
       usernameExistsToast();
+      setIsLoading(false);
       return;
     }
 
@@ -42,6 +48,8 @@ export const Register = () => {
       password,
       options: { data: { username, full_name: username } },
     });
+
+    setIsLoading(false);
 
     if (response.error && response.error.status === 429) {
       return toast.error("Please try again later.");
@@ -88,10 +96,14 @@ export const Register = () => {
           message={errors.verifyPassword?.message}
           {...register("verifyPassword")}
         />
-        <Button type="submit">
-          <AiOutlineUserAdd />
-          Sign In
-        </Button>
+        {!isLoading ? (
+          <Button type="submit">
+            <AiOutlineUserAdd />
+            Sign In
+          </Button>
+        ) : (
+          <LoadingSpinner className="self-center" />
+        )}
       </form>
     </div>
   );
