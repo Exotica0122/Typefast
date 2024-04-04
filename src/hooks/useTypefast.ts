@@ -41,7 +41,7 @@ export const useTypefast = () => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isStarted && seconds > 0) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds - 1);
       }, 1000);
     } else if (seconds === 0) {
