@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 import Home from "./pages/Home";
 import NavBar from "./components/NavBar";
@@ -40,7 +41,13 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <TransitionGroup>
+      <CSSTransition timeout={450} classNames="fade">
+        <RouterProvider router={router} />
+      </CSSTransition>
+    </TransitionGroup>
+  );
 }
 
 export default App;
