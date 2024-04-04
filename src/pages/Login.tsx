@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { Session } from "@supabase/supabase-js";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { useNavigate } from "react-router-dom";
+import { Register } from "../components/auth/Register";
+import { SignIn } from "../components/auth/Login";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -21,16 +23,17 @@ const Login = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  return (
-    <>
-      {!session ? (
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
-      ) : (
-        <div>Logged in!</div>
-      )}
+  useEffect(() => {
+    if (session) {
+      navigate("/account");
+    }
+  }, [session]);
 
-      <button onClick={() => supabase.auth.signOut()}>Logout</button>
-    </>
+  return (
+    <div className="flex gap-48">
+      <Register />
+      <SignIn />
+    </div>
   );
 };
 

@@ -39,12 +39,13 @@ export const useTypefast = () => {
   }, []);
 
   useEffect(() => {
-    let interval = 0;
+    let interval: NodeJS.Timeout;
     if (isStarted && seconds > 0) {
-      interval = setInterval(() => {
+      setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds - 1);
       }, 1000);
     } else if (seconds === 0) {
+      // @ts-ignore
       clearInterval(interval);
       handleGameCompleted();
     }
