@@ -1,11 +1,16 @@
-export const LoadingSpinner = () => {
+import { cn } from "../utils/cn";
+
+export type LoadingSpinnerProps = {
+  className?: string;
+};
+
+export const LoadingSpinner = ({ className }: LoadingSpinnerProps) => {
   return (
-    <div role="status">
+    <div className={cn("h-8 w-8", className)}>
       <svg
         aria-hidden="true"
-        className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+        className="animate-spin fill-yellow-300 text-white dark:text-gray-600"
         viewBox="0 0 100 101"
-        fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
