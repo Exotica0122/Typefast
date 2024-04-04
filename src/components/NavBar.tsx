@@ -7,10 +7,12 @@ const NavBar = () => {
       <Link to="/">
         <h1 className="text-2xl font-semibold text-neutral-300">TypeFast</h1>
       </Link>
-      <AiOutlineUser
-        className="text-neutral-500 transition-colors hover:text-white"
-        size={30}
-      />
+      <Link to="/login">
+        <AiOutlineUser
+          className="text-neutral-500 transition-colors hover:text-white"
+          size={30}
+        />
+      </Link>
     </nav>
   );
 };
