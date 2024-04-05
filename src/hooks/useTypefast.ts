@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 
-const SECONDS_TIMER = 30;
-const MINUTES_IN_SECONDS = 60;
-
-export const useTypefast = () => {
+export const useTypefast = (timer: number = 30) => {
   const [words, setWords] = useState<string[]>([]);
   const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const wordsRef = useRef<HTMLDivElement[]>([]);
@@ -13,9 +10,9 @@ export const useTypefast = () => {
   const [inputFocus, setInputFocus] = useState(true);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [isStarted, setIsStarted] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
-  const [seconds, setSeconds] = useState(SECONDS_TIMER); // init this from context
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [seconds, setSeconds] = useState(timer); // init this from context
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [mainTextTranslateDistance, setMainTextTranslateDistance] = useState(0);
@@ -27,6 +24,8 @@ export const useTypefast = () => {
   });
 
   const [wpm, setWpm] = useState(0);
+  const [wpmHistory, setWpmHistory] = useState<number[]>([]);
+  const [accuracy, setAccuracy] = useState(0);
 
   // Init game
   useEffect(() => {
@@ -40,9 +39,10 @@ export const useTypefast = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isStarted && seconds > 0) {
+    if (startTime && seconds > 0) {
       interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds - 1);
+        setWpmHistory((prevWpmHistory) => [...prevWpmHistory, getCurrentWpm()]);
       }, 1000);
     } else if (seconds === 0) {
       // @ts-ignore
@@ -50,20 +50,38 @@ export const useTypefast = () => {
       handleGameCompleted();
     }
     return () => clearInterval(interval);
-  }, [isStarted, seconds]);
+  }, [startTime, seconds]);
 
-  const handleGameCompleted = () => {
-    setIsStarted(false);
-    setIsFinished(true);
+  const getCurrentWpm = () => {
+    if (!startTime) return -1;
 
     const wordsCompleted = wordsObject.reduce(
       (count, prevWord) =>
         prevWord.isTyped && !prevWord.isError ? ++count : count,
       0,
     );
-    const durationOffset = SECONDS_TIMER / MINUTES_IN_SECONDS;
-    const wpm = Math.round(wordsCompleted / durationOffset);
-    setWpm(wpm);
+    const timeElapsed = (Date.now() - startTime) / 1000 / 60;
+    const wpm = Math.round(wordsCompleted / timeElapsed);
+    return wpm;
+  };
+
+  const handleGameCompleted = () => {
+    setStartTime(null);
+    setIsFinished(true);
+
+    setWpm(getCurrentWpm());
+
+    const wordsMadeMistakes = wordsObject.reduce(
+      (count, prevWord) =>
+        prevWord.isTyped && !prevWord.isMadeMistake ? ++count : count,
+      0,
+    );
+    const wordsTyped = wordsObject.reduce(
+      (count, prevWord) => (prevWord.isTyped ? ++count : count),
+      0,
+    );
+    const accuracy = Math.round((wordsMadeMistakes / wordsTyped) * 100);
+    setAccuracy(accuracy);
   };
 
   const handleCaret = (wordIndex: number, letterIndex: number) => {
@@ -193,6 +211,7 @@ export const useTypefast = () => {
       wordObject.isTyped = true;
       if (inputValue != words[currentWordIndex]) {
         wordObject.isError = true;
+        wordObject.isMadeMistake = true;
       } else {
         wordObject.isError = false;
       }
@@ -220,6 +239,7 @@ export const useTypefast = () => {
       targetLetter.typedValue = letter;
 
       if (targetLetter.value !== letter) {
+        targetWord.isMadeMistake = true;
         targetLetter.isError = true;
       }
     } else {
@@ -245,11 +265,11 @@ export const useTypefast = () => {
   };
 
   const handleTyping = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isFinished || (!isStarted && e.key === "Enter")) return;
+    if (isFinished || (!startTime && e.key === "Enter")) return;
 
     // Start game loop
-    if (!isStarted) {
-      setIsStarted(true);
+    if (!startTime) {
+      setStartTime(Date.now());
     }
 
     // ignore if key is not necessary to track
@@ -275,12 +295,13 @@ export const useTypefast = () => {
     setCurrentWordIndex(0);
 
     setInputValue("");
-    setIsStarted(false);
     setIsFinished(false);
-    setSeconds(SECONDS_TIMER);
+    setSeconds(timer);
     setCaretElementPosition({ x: 0, y: 0 });
     setMainTextTranslateDistance(0);
     setWpm(0);
+    setWpmHistory([]);
+    setAccuracy(0);
 
     inputRef.current?.focus();
   };
@@ -292,7 +313,7 @@ export const useTypefast = () => {
     currentWordIndex,
     currentLetterIndex,
     seconds,
-    isStarted,
+    isStarted: !!startTime,
     isFinished,
     caretElementPosition,
     caretRef,
@@ -300,6 +321,8 @@ export const useTypefast = () => {
     inputRef,
     wordsRef,
     wpm,
+    wpmHistory,
+    accuracy,
     handleTyping,
     handleRestart,
     setInputFocus,

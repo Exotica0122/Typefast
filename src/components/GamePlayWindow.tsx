@@ -41,7 +41,7 @@ export const GamePlayWindow = ({
   }, [inputFocus]);
 
   return (
-    <div className="relative w-[80%]">
+    <div className="relative max-w-4xl">
       <FocusWindow showBlur={showBlur} />
       <Timer isStarted={isStarted} seconds={seconds} />
       <div

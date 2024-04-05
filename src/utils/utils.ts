@@ -13,6 +13,7 @@ export type RandomWord = {
   id: number;
   isTyped: boolean;
   isError: boolean;
+  isMadeMistake: boolean;
   word: RandomLetter[];
 };
 
@@ -31,6 +32,7 @@ export function generateRandomWords(length: number) {
       id: wordIdCounter++,
       isTyped: false,
       isError: false,
+      isMadeMistake: false,
       word: word.split("").map((letter, j) => {
         return {
           id: letterIdCounter++,

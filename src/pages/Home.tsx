@@ -19,13 +19,15 @@ const Home = () => {
     caretElementPosition,
     caretRef,
     mainTextTranslateDistance,
-    handleRestart,
-    handleTyping,
     inputRef,
     wordsRef,
     wpm,
+    wpmHistory,
+    accuracy,
     setInputFocus,
     handleBackspace,
+    handleRestart,
+    handleTyping,
   } = useTypefast();
 
   return (
@@ -56,7 +58,7 @@ const Home = () => {
           inputFocus={inputFocus}
         />
       ) : (
-        <ResultWindow wpm={wpm} />
+        <ResultWindow accuracy={accuracy} wpmHistory={wpmHistory} />
       )}
 
       <input
