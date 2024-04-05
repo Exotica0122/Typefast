@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
+import { useTypingLengthStore } from "../store/useTypingLengthStore";
 
 export const useTypefast = (timer: number = 30) => {
   const [words, setWords] = useState<string[]>([]);
@@ -12,7 +13,8 @@ export const useTypefast = (timer: number = 30) => {
 
   const [isFinished, setIsFinished] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [seconds, setSeconds] = useState(timer); // init this from context
+  const typingLength = useTypingLengthStore((state) => state.typingLength);
+  const [seconds, setSeconds] = useState(typingLength);
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [mainTextTranslateDistance, setMainTextTranslateDistance] = useState(0);
@@ -36,6 +38,13 @@ export const useTypefast = (timer: number = 30) => {
     setWords(randomWords);
     setWordsObject(randomWordsObject);
   }, []);
+
+  useEffect(() => {
+    setSeconds(typingLength);
+
+    inputRef.current?.focus();
+    setInputFocus(true);
+  }, [typingLength]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
