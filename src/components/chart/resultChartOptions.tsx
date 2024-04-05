@@ -1,4 +1,4 @@
-export const resultChartOptions = {
+export const getResultChartOptions = (max: number) => ({
   responsive: true,
   maintainAspectRatio: false,
   bezierCurve: true,
@@ -24,7 +24,7 @@ export const resultChartOptions = {
       },
       beginAtZero: true,
       min: 0,
-      max: 120,
+      max: max,
       ticks: {
         autoSkip: true,
         autoSkipPadding: 20,
@@ -47,4 +47,4 @@ export const resultChartOptions = {
       display: false,
     },
   },
-};
+});

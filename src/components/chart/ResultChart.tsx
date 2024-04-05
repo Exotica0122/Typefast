@@ -9,7 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { resultChartOptions } from "./resultChartOptions";
+import { getResultChartOptions } from "./resultChartOptions";
 
 ChartJS.register(
   CategoryScale,
@@ -38,10 +38,13 @@ export const ResultChart = ({ className, dataSet }: ResultChartProps) => {
     ],
   };
 
+  const maxWpm = Math.max(...dataSet);
+  const options = getResultChartOptions(maxWpm + 20);
+
   return (
     <div className={className}>
       {/* @ts-ignore */}
-      <Line options={resultChartOptions} data={data} />
+      <Line options={options} data={data} />
     </div>
   );
 };

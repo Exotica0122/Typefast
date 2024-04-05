@@ -28,7 +28,7 @@ const Home = () => {
     handleBackspace,
     handleRestart,
     handleTyping,
-  } = useTypefast();
+  } = useTypefast(10);
 
   return (
     <>
