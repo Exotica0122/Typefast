@@ -21,12 +21,12 @@ export const TypingSetting = ({ isStarted }: TypingSettingProps) => {
 
   return (
     <div
-      className={`flex select-none items-center justify-center ${isStarted ? " opacity-0" : "cursor-pointer opacity-100"}`}
+      className={`flex select-none items-center justify-center ${isStarted ? " opacity-0" : "opacity-100"}`}
     >
       <ul className="flex items-center justify-center gap-6 rounded-md bg-neutral-900 py-2 px-6">
         {typingLengthOptions.map((option: number) => (
           <li
-            className={`transition-colors hover:text-white ${typingLength === option ? "text-yellow-300" : "text-neutral-400"}`}
+            className={`transition-colors hover:text-white ${typingLength === option ? "text-yellow-300" : "text-neutral-400"} ${isStarted ? "" : "cursor-pointer"}`}
             onClick={() => handleUpdateTypingLength(option)}
           >
             {option}
