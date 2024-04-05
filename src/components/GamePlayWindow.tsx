@@ -42,8 +42,8 @@ export const GamePlayWindow = ({
   }, [inputFocus]);
 
   return (
-    <div className="relative flex max-w-4xl flex-col gap-12">
-      <TypingSetting />
+    <div className="relative flex h-full max-w-4xl flex-col gap-12">
+      <TypingSetting isStarted={isStarted} />
       <FocusWindow showBlur={showBlur} />
       <Timer isStarted={isStarted} seconds={seconds} />
 
