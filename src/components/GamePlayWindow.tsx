@@ -4,6 +4,7 @@ import { RandomWord } from "../utils/utils";
 import { Timer } from "./Timer";
 import { WordsDisplay } from "./WordsDisplay";
 import { FocusWindow } from "./FocusWindow";
+import { TypingSetting } from "./TypingSetting";
 
 type GamePlayWindowProps = {
   caretElementPosition: { x: number; y: number };
@@ -41,9 +42,11 @@ export const GamePlayWindow = ({
   }, [inputFocus]);
 
   return (
-    <div className="relative max-w-4xl">
-      <FocusWindow showBlur={showBlur} />
+    <div className="relative flex max-w-4xl flex-col gap-12">
+      <TypingSetting />
       <Timer isStarted={isStarted} seconds={seconds} />
+      <FocusWindow showBlur={showBlur} />
+
       <div
         className={`h-40 overflow-hidden transition-opacity duration-300 ${showBlur ? "blur" : ""}`}
       >
