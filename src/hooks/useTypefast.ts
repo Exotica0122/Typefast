@@ -295,6 +295,7 @@ export const useTypefast = (timer: number = 30) => {
     setCurrentWordIndex(0);
 
     setInputValue("");
+    setStartTime(null);
     setIsFinished(false);
     setSeconds(timer);
     setCaretElementPosition({ x: 0, y: 0 });
