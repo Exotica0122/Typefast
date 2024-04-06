@@ -112,11 +112,14 @@ export const useTypefast = () => {
   const saveWpmHistory = async (wpm: number, accuracy: number) => {
     if (!session) return;
 
-    const { error } = await supabase
-      .from("typing_history")
-      .insert([
-        { userId: session?.user.id, wpm, accuracy, mode: String(typingLength) },
-      ]);
+    const { error } = await supabase.from("typing_history").insert([
+      {
+        userId: session?.user.id,
+        wpm,
+        accuracy,
+        mode: String(typingLength),
+      },
+    ]);
 
     if (error) {
       toast.error(error.message);
