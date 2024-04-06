@@ -96,12 +96,12 @@ export const Account = () => {
     }));
   };
 
-  if (!session) {
-    return <h1>Not signed in!</h1>;
-  }
-
   if (isLoading) {
     return <LoadingSpinner />;
+  }
+
+  if (!session) {
+    return <h1>Not signed in!</h1>;
   }
 
   return (
