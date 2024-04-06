@@ -27,7 +27,7 @@ const NavbarWrapper = () => {
   }, []);
 
   return (
-    <div className="grid min-h-screen w-full grid-rows-layout items-center gap-8 bg-gradient-to-b from-neutral-800 to-neutral-900 py-8 px-12 text-white">
+    <div className="grid min-h-screen w-full grid-rows-layout items-center gap-8 bg-neutral-800 py-8 px-12 text-white">
       <NavBar />
       <main className="flex h-full flex-col items-center justify-center">
         <Outlet />
@@ -39,7 +39,7 @@ const NavbarWrapper = () => {
 
 const ErrorPage = () => {
   return (
-    <div className="grid min-h-screen w-full grid-rows-layout items-center gap-8 bg-gradient-to-b from-neutral-800 to-neutral-900 py-8 px-12 text-white">
+    <div className="grid min-h-screen w-full grid-rows-layout items-center gap-8 bg-neutral-800 py-8 px-12 text-white">
       <NavBar />
       <main className="flex h-full flex-col items-center justify-center">
         <h1 className="text-4xl text-yellow-300">404 not found</h1>
