@@ -1,4 +1,4 @@
-name: CI
+name: test
 on: pull_request
 jobs:
   tests:
@@ -6,6 +6,7 @@ jobs:
     steps:
       # Checkout the Repo
       - uses: actions/checkout@v2
+      - uses: irongut/CodeCoverageSummary@v1.3.0
 
       # Install Node 18
       - name: Setup Node
