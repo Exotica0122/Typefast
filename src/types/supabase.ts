@@ -9,7 +9,65 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      typing_history: {
+        Row: {
+          accuracy: number | null
+          date: string
+          id: number
+          mode: string | null
+          userId: string | null
+          wpm: number | null
+        }
+        Insert: {
+          accuracy?: number | null
+          date?: string
+          id?: number
+          mode?: string | null
+          userId?: string | null
+          wpm?: number | null
+        }
+        Update: {
+          accuracy?: number | null
+          date?: string
+          id?: number
+          mode?: string | null
+          userId?: string | null
+          wpm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_typing_history_userId_fkey"
+            columns: ["userId"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          username: string | null
+        }
+        Insert: {
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          username?: string | null
+        }
+        Update: {
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

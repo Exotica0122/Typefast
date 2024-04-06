@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 import { useTypingLengthStore } from "../store/useTypingLengthStore";
+import { supabase } from "../utils/supabaseClient";
+import toast from "react-hot-toast";
+import { useAuthStore } from "../store/useAuthStore";
 
 export const useTypefast = () => {
+  const session = useAuthStore((state) => state.session);
+
   const [words, setWords] = useState<string[]>([]);
   const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const wordsRef = useRef<HTMLDivElement[]>([]);
@@ -74,11 +79,8 @@ export const useTypefast = () => {
     return wpm;
   };
 
-  const handleGameCompleted = () => {
-    setStartTime(null);
-    setIsFinished(true);
-
-    setWpm(getCurrentWpm());
+  const handleGameCompleted = async () => {
+    const wpm = getCurrentWpm();
 
     const wordsMadeMistakes = wordsObject.reduce(
       (count, prevWord) =>
@@ -90,7 +92,25 @@ export const useTypefast = () => {
       0,
     );
     const accuracy = Math.round((wordsMadeMistakes / wordsTyped) * 100);
+
+    if (wpm === -1) {
+      return toast.error("Invalid WPM");
+    }
+
+    const { error } = await supabase
+      .from("typing_history")
+      .insert([
+        { userId: session?.user.id, wpm, accuracy, mode: typingLength },
+      ]);
+
+    if (error) {
+      toast.error(error.message);
+    }
+
+    setStartTime(null);
+    setIsFinished(true);
     setAccuracy(accuracy);
+    setWpm(wpm);
   };
 
   const handleCaret = (wordIndex: number, letterIndex: number) => {
