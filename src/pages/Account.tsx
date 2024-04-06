@@ -107,13 +107,13 @@ export const Account = () => {
   return (
     <div className="relative overflow-x-auto sm:rounded-lg">
       <div className="mb-12 grid grid-cols-2 grid-rows-2">
-        <Label title="average wpm:" value={averageWpm} />
-        <Label title="highest wpm:" value={wpmMax} />
+        <Label title="average wpm:" value={`${averageWpm}`} />
+        <Label title="highest wpm:" value={`${wpmMax}`} />
         <Label title="average acc:" value={`${averageAcc}%`} />
         <Label title="highest acc:" value={`${accMax}%`} />
       </div>
       <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-        <thead className="text-xs uppercase text-neutral-500">
+        <thead className="text-xs text-neutral-500">
           <tr>
             <th scope="col" className="px-6 py-3">
               wpm

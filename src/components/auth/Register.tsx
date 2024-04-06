@@ -11,10 +11,12 @@ import { Button } from "../ui/Button";
 import { AiOutlineUserAdd } from "react-icons/ai";
 import { useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
+import { useNavigate } from "react-router-dom";
 
 const usernameExistsToast = () => toast.error("Username already exists.");
 
 export const Register = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -37,7 +39,11 @@ export const Register = () => {
       .eq("username", username)
       .limit(1);
 
-    if (!usernameQuery.data || usernameQuery.data.length > 0) {
+    if (
+      usernameQuery.data &&
+      usernameQuery.data.length > 0 &&
+      usernameQuery.data[0].username?.toLowerCase() === username.toLowerCase()
+    ) {
       usernameExistsToast();
       setIsLoading(false);
       return;
@@ -58,6 +64,8 @@ export const Register = () => {
     if (response.error) {
       return toast.error(response.error.message);
     }
+
+    navigate("/account");
   };
 
   return (
