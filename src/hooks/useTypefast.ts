@@ -16,6 +16,7 @@ export const useTypefast = () => {
   const [inputFocus, setInputFocus] = useState(true);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const [isStarted, setIsStarted] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const typingLength = useTypingLengthStore((state) => state.typingLength);
@@ -53,7 +54,7 @@ export const useTypefast = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (startTime && seconds > 0) {
+    if (isStarted && seconds > 0) {
       interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds - 1);
         setWpmHistory((prevWpmHistory) => [...prevWpmHistory, getCurrentWpm()]);
@@ -79,7 +80,7 @@ export const useTypefast = () => {
     return wpm;
   };
 
-  const handleGameCompleted = async () => {
+  const handleGameCompleted = () => {
     const wpm = getCurrentWpm();
 
     const wordsMadeMistakes = wordsObject.reduce(
@@ -97,6 +98,18 @@ export const useTypefast = () => {
       return toast.error("Invalid WPM");
     }
 
+    // store history if logged in
+    if (session) {
+      saveWpmHistory(wpm, accuracy);
+    }
+
+    setIsStarted(false);
+    setIsFinished(true);
+    setAccuracy(accuracy);
+    setWpm(wpm);
+  };
+
+  const saveWpmHistory = async (wpm: number, accuracy: number) => {
     const { error } = await supabase
       .from("typing_history")
       .insert([
@@ -106,11 +119,6 @@ export const useTypefast = () => {
     if (error) {
       toast.error(error.message);
     }
-
-    setStartTime(null);
-    setIsFinished(true);
-    setAccuracy(accuracy);
-    setWpm(wpm);
   };
 
   const handleCaret = (wordIndex: number, letterIndex: number) => {
@@ -318,6 +326,7 @@ export const useTypefast = () => {
 
     // Start game loop
     if (!startTime) {
+      setIsStarted(true);
       setStartTime(Date.now());
     }
 
@@ -344,6 +353,7 @@ export const useTypefast = () => {
     setCurrentWordIndex(0);
 
     setInputValue("");
+    setIsStarted(false);
     setStartTime(null);
     setIsFinished(false);
     setSeconds(typingLength);
@@ -363,7 +373,7 @@ export const useTypefast = () => {
     currentWordIndex,
     currentLetterIndex,
     seconds,
-    isStarted: !!startTime,
+    isStarted,
     isFinished,
     caretElementPosition,
     caretRef,
