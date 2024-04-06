@@ -113,7 +113,7 @@ export const Account = () => {
         <Label title="highest acc:" value={`${accMax}%`} />
       </div>
       <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-400">
-        <thead className="text-xs uppercase text-neutral-500">
+        <thead className="text-xs text-neutral-500">
           <tr>
             <th scope="col" className="px-6 py-3">
               wpm
