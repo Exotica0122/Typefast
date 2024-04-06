@@ -11,8 +11,10 @@ import { useState } from "react";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/Button";
 import { FiLogIn } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export const SignIn = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -39,9 +41,8 @@ export const SignIn = () => {
       return toast.error(response.error.message);
     }
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    setIsLoading(false);
+    navigate("/account");
   };
 
   return (
