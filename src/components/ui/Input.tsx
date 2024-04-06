@@ -7,6 +7,7 @@ export type InputProps = {
   type?: HTMLInputTypeAttribute;
   placeholder?: string;
   message?: string;
+  value?: string;
   autoComplete?: string;
   required?: boolean;
   disabled?: boolean;
@@ -14,6 +15,7 @@ export type InputProps = {
   label?: string;
   labelClassName?: string;
   fullWidth?: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 };
 
 export const Input = forwardRef(
@@ -24,6 +26,7 @@ export const Input = forwardRef(
       type = "text",
       placeholder,
       message,
+      value,
       autoComplete,
       label,
       required = false,
@@ -31,6 +34,7 @@ export const Input = forwardRef(
       error = false,
       labelClassName,
       fullWidth,
+      onChange,
       ...props
     }: InputProps,
     ref: LegacyRef<HTMLInputElement> | undefined,
@@ -51,7 +55,9 @@ export const Input = forwardRef(
         <input
           type={type}
           id={id}
+          data-testid={id}
           ref={ref}
+          value={value}
           disabled={disabled}
           autoComplete={autoComplete}
           className={cn(
@@ -61,6 +67,7 @@ export const Input = forwardRef(
           )}
           placeholder={placeholder}
           required={required}
+          onChange={onChange}
           {...props}
         />
         {message && (

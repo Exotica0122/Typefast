@@ -1,12 +1,14 @@
 import { FaRedo } from "react-icons/fa";
 
 type RestartButtonProps = {
+  id?: string;
   handleRestart: () => void;
 };
 
-export const RestartButton = ({ handleRestart }: RestartButtonProps) => {
+export const RestartButton = ({ id, handleRestart }: RestartButtonProps) => {
   return (
     <button
+      data-testid={id}
       className="mt-4 px-6 py-2 text-neutral-400 transition-colors hover:text-neutral-100"
       onClick={handleRestart}
     >
