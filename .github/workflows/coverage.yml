@@ -1,0 +1,7 @@
+name: Code Coverage Summary
+on: pull_request
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: irongut/CodeCoverageSummary@v1.3.0
