@@ -110,6 +110,8 @@ export const useTypefast = () => {
   };
 
   const saveWpmHistory = async (wpm: number, accuracy: number) => {
+    if (!session) return;
+
     const { error } = await supabase
       .from("typing_history")
       .insert([
