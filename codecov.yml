@@ -7,8 +7,6 @@ coverage:
           threshold: 10%
           base: auto 
           # advanced
-          branches: 
-            - master
           if_ci_failed: error #success, failure, error, ignore
           only_pulls: false
           flags: 
@@ -26,8 +24,6 @@ coverage:
         paths: 
           - "src"
        # advanced settings
-        branches: 
-          - master
         if_ci_failed: error #success, failure, error, ignore
         informational: false
         only_pulls: false
