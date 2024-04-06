@@ -26,6 +26,7 @@ export const TypingSetting = ({ isStarted }: TypingSettingProps) => {
       <ul className="flex items-center justify-center gap-6 rounded-md bg-neutral-900 py-2 px-6">
         {typingLengthOptions.map((option: number) => (
           <li
+            key={option}
             className={`transition-colors hover:text-white ${typingLength === option ? "text-yellow-300" : "text-neutral-400"} ${isStarted ? "" : "cursor-pointer"}`}
             onClick={() => handleUpdateTypingLength(option)}
           >

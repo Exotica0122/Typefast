@@ -17,7 +17,10 @@ export type RandomWord = {
   word: RandomLetter[];
 };
 
-export function generateRandomWords(length: number) {
+export function generateRandomWords(
+  length: number,
+  wordIdCounterOffset: number = 0,
+) {
   const randomWords = [];
   for (let i = 0; i < length; ++i) {
     const randomWord =
@@ -25,7 +28,7 @@ export function generateRandomWords(length: number) {
     randomWords.push(randomWord);
   }
 
-  let wordIdCounter = 0;
+  let wordIdCounter = wordIdCounterOffset;
   let letterIdCounter = 0;
   const randomWordsObject: RandomWord[] = randomWords.map((word) => {
     return {

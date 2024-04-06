@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { generateRandomWords, keysToTrack, RandomWord } from "../utils/utils";
 import { useTypingLengthStore } from "../store/useTypingLengthStore";
 
-export const useTypefast = (timer: number = 30) => {
+export const useTypefast = () => {
   const [words, setWords] = useState<string[]>([]);
   const [wordsObject, setWordsObject] = useState<RandomWord[]>([]);
   const wordsRef = useRef<HTMLDivElement[]>([]);
@@ -232,6 +232,26 @@ export const useTypefast = (timer: number = 30) => {
     setCurrentLetterIndex(0);
     setInputValue("");
     handleCaret(currentWordIndex + 1, 0);
+
+    handleAddMoreWords();
+  };
+
+  const handleAddMoreWords = () => {
+    if (
+      currentWordIndex &&
+      currentWordIndex % 50 === 0 &&
+      currentWordIndex % 100 !== 0
+    ) {
+      const { randomWords, randomWordsObject } = generateRandomWords(
+        100,
+        words.length,
+      );
+      setWords((prevWords) => [...prevWords, ...randomWords]);
+      setWordsObject((prevWordsObject) => [
+        ...prevWordsObject,
+        ...randomWordsObject,
+      ]);
+    }
   };
 
   const handleNewLetterTyped = (letter: string) => {
@@ -306,7 +326,7 @@ export const useTypefast = (timer: number = 30) => {
     setInputValue("");
     setStartTime(null);
     setIsFinished(false);
-    setSeconds(timer);
+    setSeconds(typingLength);
     setCaretElementPosition({ x: 0, y: 0 });
     setMainTextTranslateDistance(0);
     setWpm(0);
