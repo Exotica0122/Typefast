@@ -107,8 +107,8 @@ export const Account = () => {
   return (
     <div className="relative overflow-x-auto sm:rounded-lg">
       <div className="mb-12 grid grid-cols-2 grid-rows-2">
-        <Label title="average wpm:" value={averageWpm} />
-        <Label title="highest wpm:" value={wpmMax} />
+        <Label title="average wpm:" value={`${averageWpm}`} />
+        <Label title="highest wpm:" value={`${wpmMax}`} />
         <Label title="average acc:" value={`${averageAcc}%`} />
         <Label title="highest acc:" value={`${accMax}%`} />
       </div>
