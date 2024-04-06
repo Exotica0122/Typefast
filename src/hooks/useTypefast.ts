@@ -115,7 +115,7 @@ export const useTypefast = () => {
     const { error } = await supabase
       .from("typing_history")
       .insert([
-        { userId: session?.user.id, wpm, accuracy, mode: typingLength },
+        { userId: session?.user.id, wpm, accuracy, mode: String(typingLength) },
       ]);
 
     if (error) {
