@@ -21,6 +21,7 @@ export const WordsDisplay = ({
         transform: `translateY(${mainTextTranslateDistance}px)`,
       }}
       onClick={() => inputRef.current?.focus()}
+      onTouchStart={() => inputRef.current?.focus()}
     >
       {wordsObject.map((wordObject, i) => {
         return (
